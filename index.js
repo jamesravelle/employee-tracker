@@ -150,7 +150,7 @@ function start(){
                             if(answer.manager === "No Manager"){
                                 managerSelect = null;
                             } else{
-                                let x = answer.mananger.split(" | ");
+                                let x = answer.manager.split(" | ");
                                 managerSelect = parseInt(x[1]);
                             }
                             connection.query(
@@ -220,26 +220,56 @@ function start(){
             });
             break;
         case "Update":
-            let newArray = [];
+            let employeeArray = [];
+            let roleArray = [];
             connection.query(`
                 SELECT *
                 FROM employee;
                 `, function(err, results) {
                     if (err) throw err;
-                    console.table(results);
+                    // console.table(results);
                     // Push all employees into an array
                     // newArray.push();
+                    for(let i = 0; i < results.length; i++){
+                        employeeArray.push(results[i].first_name + " " + results[i].last_name + " | " + results[i].id)
+                    }
+                    connection.query(`
+                    SELECT *
+                    FROM role;
+                    `, function(err, results){
+                        if (err) throw err;
+                        for(let i = 0; i < results.length; i++){
+                            roleArray.push(results[i].title + " | " + results[i].id)
+                        }
+                        // Run inquirer with employee and role arrays
+                        inquirer
+                        .prompt([
+                            {
+                            name: "update",
+                            type: "list",
+                            message: "Which employee would you like to update?",
+                            choices: employeeArray
+                            },
+                            {
+                            name: "newRole",
+                            type: "list",
+                            message: "What is their new role?",
+                            choices: roleArray
+                            }
+                        ])
+                        .then(function(answer) {
+                            let employeeID = answer.update.split(' | ');
+                            let roleID = answer.newRole.split(' | ');
+                            // Run function with employee ID and the new role
+                            updateEmployee(employeeID[1], roleID[1])
+                            // console.log(`
+                            // Employee: ${answer.update} / id: ${employeeID[1]}
+                            // Role: ${answer.newRole} / id: ${roleID[1]}
+                            // `)
+                        });
+                    })
+                    
             })
-            inquirer
-            .prompt({
-              name: "update",
-              type: "list",
-              message: "Which employee would you like to update?",
-              choices: ["Department", "Role", "Employee"]
-            })
-            .then(function(answer) {
-               console.log(answer.update);
-            });
             break;
         case "Exit":
             end();
@@ -250,5 +280,16 @@ function start(){
   });
 }
 
-
+function updateEmployee(employeeID,roleID){
+    connection.query(`
+    UPDATE employee 
+    SET role_id = ${roleID} 
+    WHERE id = ${employeeID}
+                `, function(err, results) {
+                    if (err) throw err;
+                    console.log('Success!');
+                    console.table(results);
+                })
+    end();
+}
 // end();
