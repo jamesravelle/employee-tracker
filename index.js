@@ -27,11 +27,11 @@ function start(){
       name: "start",
       type: "list",
       message: "What would you like to do?",
-      choices: ["Add", "View", "Update", "Exit"]
+      choices: ["Add", "View", "Update", "Delete", "Exit"]
     })
     .then(function(answer) {
      switch (answer.start){
-         case "Add":
+        case "Add":
             inquirer
             .prompt({
               name: "add",
@@ -51,7 +51,7 @@ function start(){
                             connection.query(
                                 `INSERT INTO department (name)
                                 VALUES ("${answer.addDept}")`,
-                                function(err) {
+                                function(err, results) {
                                   if (err) throw err;
                                   console.log(answer.addDept + " was added.");
                                   start();
@@ -169,55 +169,18 @@ function start(){
             });
              break;
         case "View":
-            inquirer
-            .prompt({
-              name: "view",
-              type: "list",
-              message: "What would you like to view?",
-              choices: ["Department", "Role", "Employee"]
-            })
-            .then(function(answer) {
-                switch (answer.view){
-                    case "Department":
-                        connection.query(`
-                            SELECT *
-                            FROM department;
-                            `, function(err, results) {
-                                if (err) throw err;
-                                console.log('\n--------- Departments ---------');
-                                console.table(results);
-                                console.log('-------------------------------\n\n\n');
-                        });
-                        start();
-                        break;
-                    case "Role":
-                        connection.query(`
-                            SELECT *
-                            FROM role;
-                            `, function(err, results) {
-                                if (err) throw err;
-                                console.log('\n ----------- Roles -----------');
-                                console.table(results);
-                                console.log('-----------------------------\n\n\n');
-                        });
-                        start();
-                        break;
-                    case "Employee":
-                        connection.query(`
-                            SELECT *
-                            FROM employee;
-                            `, function(err, results) {
-                                if (err) throw err;
-                                console.log('\n ---------- Employees ------------');
-                                console.table(results);
-                                console.log('---------------------------------\n\n\n');
-                        });
-                        start();
-                        break;
-                    default:
-                        break;
-                }
-            });
+            // Join all 3 tables
+            connection.query(
+                `SELECT * 
+                FROM department join role 
+                ON department.id = role.id join employee 
+                ON role.id = employee.id
+                `,
+                function(err, results) {
+                  if (err) throw err;
+                  console.table(results);
+                  start();
+                });
             break;
         case "Update":
             let employeeArray = [];
@@ -273,6 +236,30 @@ function start(){
             break;
         case "Exit":
             end();
+            break;
+        case "Delete":
+            inquirer
+            .prompt({
+              name: "delete",
+              type: "list",
+              message: "What would you like to delete?",
+              choices: ["Department", "Role", "Employee"]
+            })
+            .then(function(answer) {
+                switch (answer.add){
+                    case "Department":
+                        //
+                        break;
+                    case "Role":
+                        //
+                        break;
+                    case "Employee":
+                        //
+                        break;
+                    default:
+                        break;
+                }
+            });
             break;
         default:
             break;
