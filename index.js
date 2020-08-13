@@ -246,15 +246,76 @@ function start(){
               choices: ["Department", "Role", "Employee"]
             })
             .then(function(answer) {
-                switch (answer.add){
+                switch (answer.delete){
                     case "Department":
-                        //
+                        let departmentArray = []
+                        connection.query(`
+                            SELECT *
+                            FROM department;
+                            `, function(err, results) {
+                                if (err) throw err;
+                                for(let i = 0; i < results.length; i++){
+                                    departmentArray.push(results[i].name + " | " + results[i].id)
+                                }
+                                inquirer
+                                .prompt({
+                                name: "delete",
+                                type: "list",
+                                message: "What department would you like to delete?",
+                                choices: departmentArray
+                                })
+                                .then(function(answer) {
+                                    let id = answer.delete.split(" | ");
+                                    deleteItem('department', id[1]);
+                                })
+                        });
+                        
                         break;
                     case "Role":
-                        //
+                        let roleArray = []
+                        connection.query(`
+                            SELECT *
+                            FROM role;
+                            `, function(err, results) {
+                                if (err) throw err;
+                                for(let i = 0; i < results.length; i++){
+                                    roleArray.push(results[i].title + " | " + results[i].id)
+                                }
+                                inquirer
+                                .prompt({
+                                name: "delete",
+                                type: "list",
+                                message: "What role would you like to delete?",
+                                choices: roleArray
+                                })
+                                .then(function(answer) {
+                                    let id = answer.delete.split(" | ");
+                                    deleteItem('role', id[1]);
+                                })
+                        });
                         break;
                     case "Employee":
-                        //
+                        let employeeArray = []
+                        connection.query(`
+                            SELECT *
+                            FROM employee;
+                            `, function(err, results) {
+                                if (err) throw err;
+                                for(let i = 0; i < results.length; i++){
+                                    employeeArray.push(results[i].first_name + " " + results[i].last_name + " | " + results[i].id)
+                                }
+                                inquirer
+                                .prompt({
+                                name: "delete",
+                                type: "list",
+                                message: "What employee would you like to delete?",
+                                choices: employeeArray
+                                })
+                                .then(function(answer) {
+                                    let id = answer.delete.split(" | ");
+                                    deleteItem('employee', id[1]);
+                                })
+                        });
                         break;
                     default:
                         break;
@@ -275,6 +336,19 @@ function updateEmployee(employeeID,roleID){
                 `, function(err, results) {
                     if (err) throw err;
                     console.log('Success!');
+                    console.table(results);
+                })
+    end();
+}
+
+function deleteItem(table, id){
+    console.log();
+    
+    connection.query(`
+    DELETE FROM ${table} WHERE id=${id};
+                `, function(err, results) {
+                    if (err) throw err;
+                    console.log(`Deleted item from ${table}`);
                     console.table(results);
                 })
     end();
